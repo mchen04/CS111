@@ -55,19 +55,18 @@ int main() {
     }
 
     if (p == 0 || q == 0) {
-        cout << "Public key is not valid!" << endl;
+        cout << "Public key is not valid!" ;
         return 0;
     }
 
     long long phi = (p - 1) * (q - 1);
     if (gcd(e, phi) != 1) {
-        cout << "Public key is not valid!" << endl;
+        cout << "Public key is not valid!" ;
         return 0;
     }
 
     long long d = find_modular_inverse(e, phi);
-
-    cout << p << " " << q << " " << phi << " " << d << endl;
+    cout << p << " " << q << " " << phi << " " << d ;
 
     vector<long long> decodedMessage;
     for (long long cipher_num : ciphertext) {
@@ -77,7 +76,6 @@ int main() {
     for (long long num : decodedMessage) {
         cout << num << " ";
     }
-    cout << endl;
 
     map<long long, char> number_to_char_mapping;
     for (char i = 'A'; i <= 'Z'; i++) {
