@@ -6,35 +6,53 @@
 using namespace std;
 
 long long gcd(long long a, long long b) {
-    if (b == 0) return a;
-    return gcd(b, a % b);
+    while (b != 0) {
+        long long t = b;
+        b = a % b;
+        a = t;
+    }
+    return a;
 }
 
 long long modular_exponentiation(long long base, long long exp, long long mod) {
     long long result = 1;
+    base = base % mod;
     while (exp > 0) {
-        if (exp % 2 == 1) {
+        if (exp & 1) {
             result = (result * base) % mod;
         }
+        exp = exp >> 1;
         base = (base * base) % mod;
-        exp /= 2;
     }
     return result;
 }
 
 long long find_modular_inverse(long long a, long long m) {
-    long long original_modulus = m, temp, quotient;
-    long long previous_x = 0, current_x = 1;
+    long long m0 = m, t, q;
+    long long x0 = 0, x1 = 1;
+    if (m == 1) return 0;
     while (a > 1) {
-        quotient = a / m;
-        temp = m;
-        m = a % m, a = temp;
-        temp = previous_x;
-        previous_x = current_x - quotient * previous_x;
-        current_x = temp;
+        q = a / m;
+        t = m;
+        m = a % m, a = t;
+        t = x0;
+        x0 = x1 - q * x0;
+        x1 = t;
     }
-    if (current_x < 0) current_x += original_modulus;
-    return current_x;
+    if (x1 < 0) x1 += m0;
+    return x1;
+}
+
+bool is_prime(long long n) {
+    if (n <= 1) return false;
+    if (n <= 3) return true;
+    if (n % 2 == 0 || n % 3 == 0) return false;
+    long long i = 5;
+    while (i * i <= n) {
+        if (n % i == 0 || n % (i + 2) == 0) return false;
+        i += 6;
+    }
+    return true;
 }
 
 int main() {
@@ -54,19 +72,24 @@ int main() {
         }
     }
 
-    if (p == 0 || q == 0) {
-        cout << "Public key is not valid!" ;
+    if (!is_prime(p) || !is_prime(q) || p == 0 || q == 0 || p == q) {
+        cout << "Public key is not valid!";
         return 0;
     }
 
     long long phi = (p - 1) * (q - 1);
-    if (gcd(e, phi) != 1) {
-        cout << "Public key is not valid!" ;
+    if (e <= 1 || e >= phi || e == phi || gcd(e, phi) != 1) {
+        cout << "Public key is not valid!";
         return 0;
     }
 
     long long d = find_modular_inverse(e, phi);
-    cout << p << " " << q << " " << phi << " " << d ;
+    if (d == 0) {
+        cout << "Public key is not valid!";
+        return 0;
+    }
+
+    cout << p << " " << q << " " << phi << " " << d << endl;
 
     vector<long long> decodedMessage;
     for (long long cipher_num : ciphertext) {
@@ -76,10 +99,11 @@ int main() {
     for (long long num : decodedMessage) {
         cout << num << " ";
     }
+    cout << endl;
 
     map<long long, char> number_to_char_mapping;
     for (char i = 'A'; i <= 'Z'; i++) {
-        number_to_char_mapping[5 + (i - 'A')] = i;
+        number_to_char_mapping[i - 'A' + 5] = i;
     }
     number_to_char_mapping[31] = ' ';
     number_to_char_mapping[32] = '"';
@@ -90,7 +114,6 @@ int main() {
     for (long long num : decodedMessage) {
         cout << number_to_char_mapping[num];
     }
-    cout << endl;
 
     return 0;
 }
